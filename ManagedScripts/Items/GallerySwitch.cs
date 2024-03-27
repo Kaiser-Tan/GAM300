@@ -19,7 +19,8 @@ public class GallerySwitch : Script
     public static bool isActivated = false;
     [SerializeField]
     public GameObject? _InteractUI;
-
+    private bool isInteractUIActive = false;
+    public GameObject? hidingGameObject;
     public override void Awake()
     {
         audioPlayer = gameObject.GetComponent<AudioComponent>();
@@ -32,16 +33,18 @@ public class GallerySwitch : Script
 
     public override void Update()
     {
-        if (!isActivated && p02.isPaintingCollected && gameObject.GetComponent<RigidBodyComponent>().IsRayHit())
+        if (!isActivated && p02.isPaintingCollected && isInteractUIActive)
         {
             Console.WriteLine("Gallery Switch");
-            InteractUI.isShow = true;
+            //InteractUI.isShow = true;
 
             if (Input.GetKeyDown(Keycode.E))
             {
                 isActivated = true;
-                GalleryHiding.GhostShouldMove = true;
-                GalleryHiding.timeLimit = 10.0f;
+                isInteractUIActive = false;
+                hidingGameObject.GetComponent<EventGalleryHiding>().GhostShouldMove = true;
+                hidingGameObject.GetComponent<EventGalleryHiding>().timeLimit = 10.0f;
+                hidingGameObject.GetComponent<EventGalleryHiding>().GhostMoved = false;
                 if (GalleryLetter.isNotePicked)
                 {
                     audioPlayer.play("pc_mighthaveopened");
@@ -58,5 +61,26 @@ public class GallerySwitch : Script
         {
             //_InteractUI.SetActive(false);
         }
+        if (isInteractUIActive == false)
+        {
+            _InteractUI.SetActive(false);
+        }
+
+    }
+
+    public override void OnTriggerEnter(ColliderComponent collider)
+    {
+        if (p02.isPaintingCollected)
+        {
+            isInteractUIActive = true;
+            _InteractUI.SetActive(true);
+        }
+
+    }
+
+    public override void OnTriggerExit(ColliderComponent collider)
+    {
+        isInteractUIActive = false;
+        _InteractUI.SetActive(true);
     }
 }
